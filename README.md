@@ -4,6 +4,7 @@
 
 ## 구성
 
+- `.cursor/rules/*.mdc` — Cursor **프로젝트 규칙**(원격/팀 규칙 동기화 시에도 이 경로·확장자 사용)
 - `.cursor/skills/harness/` — 메타 스킬 `SKILL.md` 및 `references/`
 - `.cursor/harness/agents/` — 도메인별 역할 명세를 둘 위치
 

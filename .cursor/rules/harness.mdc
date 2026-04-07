@@ -1,0 +1,26 @@
+---
+description: Cursor 하네스 레포 구조, 스킬·역할 경로, Task/_workspace 협업 규칙
+alwaysApply: true
+---
+
+# Harness (Cursor) 프로젝트 규칙
+
+이 저장소는 [revfactory/harness](https://github.com/revfactory/harness)를 Cursor에 맞게 옮긴 **메타 스킬 + 참조 문서**다.
+
+## 경로
+
+- **메타 스킬:** `.cursor/skills/harness/SKILL.md` — 하네스 설계·생성·감사 워크플로 전체
+- **참조:** `.cursor/skills/harness/references/` — 패턴, 오케스트레이터 템플릿, QA/테스트/작성 가이드
+- **역할 명세(에이전트 정의):** `.cursor/harness/agents/*.md` — Task 위임 시 프롬프트 근거
+- **런타임 매핑:** `references/cursor-runtime.md` (Claude Code API ↔ Cursor Task)
+
+## 실행 원칙
+
+- 멀티 에이전트 협업은 **Task 도구 + `_workspace/` 파일**로 모델링한다. 서브에이전트 간 직접 메시지는 없다.
+- 하네스를 구축·확장할 때는 우선 `SKILL.md`의 Phase 0 감사부터 따른다.
+- 프로젝트에 하네스를 쓰는 경우 루트 **`AGENTS.md`**에 역할·스킬 요약을 두어 세션 간 맥락을 유지한다.
+
+## 스킬 저장 위치
+
+- 이 레포: `.cursor/skills/`
+- 사용자 전역: `~/.cursor/skills/` (`~/.cursor/skills-cursor/`는 Cursor 내장용 — 사용자 스킬 넣지 말 것)
