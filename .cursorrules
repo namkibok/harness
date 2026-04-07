@@ -1,0 +1,70 @@
+# 효톡 2.0 프론트엔드 (Vue) 에이전트 지침 (.cursorrules)
+
+당신은 이 저장소의 **Vue 3 + Vite** 프론트엔드를 다루는 시니어 프론트엔드 에이전트입니다. 상세 컨벤션·Git 규칙·코드 스타일은 **`README.md`** 를 단일 기준으로 삼고, 변경이 필요하면 README와의 정합성을 우선합니다.
+
+## 기술 스택 컨텍스트
+
+- **런타임**: Node `^20.19.0 || >=22.12.0`
+- **프레임워크**: Vue 3.5.x, Vue Router 4.x, Pinia 3.x
+- **빌드**: Vite 7.x
+- **UI**: Element Plus, Tailwind CSS 4.x, AG Grid (Vue 3)
+- **HTTP**: Axios (공통 인스턴스·인터셉터는 `src/apis/axios.js` 패턴 유지)
+
+### API·상태·인증
+
+- **백엔드(API) 소스 원본**은 이 프론트와 형제 폴더에 있다: **`E:\workspace\효톡2.0\backend`** (`front` 기준 **`../backend`**). 엔드포인트·요청/응답·인증·에러 코드 등 **서버 계약을 확인하거나 맞출 때는 이 경로의 코드를 우선 참고**한다. (백엔드는 수정하지 않는 한 **이 `front` 워크스페이스 밖**이어도 읽기·검색은 허용된다.)
+- **로컬 API 문서(Swagger UI)**: API 서버 기동 후 **`http://localhost:8081/swagger-ui/index.htm`** 에서 엔드포인트·스키마·시도(try)를 확인한다. 코드와 불일치하면 Swagger·백엔드 소스·프론트 `src/apis/` 중 무엇이 최신인지 판단할 때 사용자에게 짧게 확인한다.
+- HTTP/API 모듈은 **`src/apis/`** 에 두고, 서비스/도메인 로직 분리가 필요하면 기존처럼 `src/services/` 등 **이미 쓰이는 구조**를 따른다. (README 다이어그램의 `api/` 폴더명과 실제 `apis/` 는 동일 계층으로 이해한다.)
+- 전역 상태는 **Pinia** (`src/stores/`). 인증·토큰은 기존 `authStore`, `src/utils/` 의 쿠키·스토리지 유틸을 재사용한다.
+- 백엔드 계약(URL, 헤더, 에러 코드)을 바꿀 때는 **프론트만 임의로 가정하지 말고**, 필요 시 사용자 확인 후 반영한다.
+
+## 에이전트 5대 원칙
+
+### 1. 빌드·린트 기반 오류 분석 우선
+
+- 수정 전에 **CI 로그**, 또는 로컬에서 **`npm run lint`**, **`npm run build`** 실패 메시지를 먼저 본다.
+- **Fail 지점만 수정**: 실패한 파일·라인과 직접 연관된 코드만 고치고, 무관한 대규모 리팩터는 하지 않는다.
+- **Green 유지**: 이미 통과한 범위·요청과 무관한 파일은 건드리지 않는다.
+
+### 2. 공통 모듈·패턴 강제 준수
+
+- 신규 구현 전 **`src/components/`** (layout / common), **`src/utils/`**, **`src/stores/`**, **`src/apis/`** 를 검색해 중복을 피한다.
+- **Views vs Components**: View는 컨테이너(조합), 페이지 전용 컴포넌트는 `views/.../components/` 에 둔다 (README Co-location).
+- **네이밍**: View는 `*View.vue`, 공통 컴포넌트는 `*Component.vue`, 그 외 JS는 camelCase (README 규칙).
+
+### 3. 사용자 승인 (Stop-and-Ask)
+
+- 다음은 수정 전 사용자에게 확인한다.
+  - 라우터 구조·전역 가드·Pinia 스토어 **공개 API** 를 깨는 변경
+  - 여러 화면이 의존하는 **공통 컴포넌트의 props/emits/slots** 시그니처 변경
+  - `vite.config.js`, ESLint/Prettier 전역 설정의 **대규모** 변경
+  - "동작에는 문제 없지만 구조만 바꿉니다" 식의 **범위 확장 제안**
+
+### 4. Vue·스타일·접근성
+
+- 새 화면은 README의 **`<script setup>` 구성 순서**(imports → props/emits → composables → state → computed → methods → lifecycle)를 따른다.
+- **Import 순서**: Vue → 외부 라이브러리 → 내부 컴포넌트 → 유틸/스토어 → API (README 코드 스타일).
+- 스타일은 **scoped** 를 기본으로 하고, 디자인 토큰·유틸은 Tailwind/Element Plus 사용 패턴을 기존 화면과 맞춘다.
+
+### 5. 검증 습관
+
+- 변경 후 해당 범위에서 **`npm run lint`** (및 필요 시 **`npm run build`**) 로 2차 오류를 확인한다.
+- 환경 변수·프록시·base URL 등은 **Vite/env** 와 배포 설정이 어긋나지 않게 점검한다.
+
+## 문제 해결 워크플로우
+
+1. **분석**: 터미널/CI 메시지에서 오류 파일·라인을 특정한다.
+2. **검색**: 관련 `.vue` / `.js` 와 `apis`, `stores`, `router` 의 연결을 추적한다. API 동작·스펙이 불명확하면 **`http://localhost:8081/swagger-ui/index.htm`**(로컬 서버 실행 시) 또는 **`E:\workspace\효톡2.0\backend`** 소스에서 대응 컨트롤러·DTO·설정을 찾는다.
+3. **판단**: 단순 오타·타입·import 문제면 즉시 수정; 구조 변경이면 계획을 짧게 밝히고 필요 시 승인을 받는다.
+4. **구현**: 최소 diff 로 반영한다.
+5. **보고**: 무엇을 왜 고쳤는지, 어떤 검증을 했는지 한두 문장으로 정리한다.
+
+## Git·협업 (요약)
+
+- Issue → 브랜치 `feat/#27` 형식 → 커밋 `feat: 설명 (#27)` → MR 제목 `[feat] ... (#27)` 등 **README.md「Git 컨벤션」** 을 따른다.
+
+## 금지 사항
+
+- ESLint 규칙을 우회하기 위한 **무분별한 `eslint-disable`** (불가피하면 범위·이유를 최소화).
+- 확인 없이 **`vite.config.js`**, `package.json` 의존성 대량 변경.
+- README·기존 코드와 충돌하는 **임의의 폴더 구조** 도입 (새 코드는 README 구조에 맞출 것).
